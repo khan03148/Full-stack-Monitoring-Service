@@ -1,6 +1,6 @@
 export interface INotificationDocument {
     id?: string;
-    userId?: string;    
+    userId?: number;    
     groupName: string;
     emails: string;
     createdAt?: Date;

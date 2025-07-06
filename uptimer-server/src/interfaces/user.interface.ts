@@ -9,20 +9,22 @@ declare global {
 }
 
 export interface IAuthPayload {
-  id: string;
+  id: number;
   username: string;
   email: string;
   iat?: number;
 }
 
 export interface IUserDocument {
-    id?: string;
+    id?: number;
     username?: string;
     googleId?: string;
     facebookId?: string;
     email?: string;
     password?: string;
     createdAt?: Date;
+    socialId?: string;
+    type?: string;
     comparePassword?: (password: string, hashedPassword:string) => Promise<boolean>;
     hashPassword?: (password: string) => Promise<string>;
 
