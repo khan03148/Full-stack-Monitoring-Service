@@ -27,7 +27,14 @@ import { mergedGQLSchema } from "@app/graphql/schema";
 import { GraphQLSchema } from "graphql";
 import { resolvers } from "@app/graphql/resolvers";
 import { AppContext } from "@app/interfaces/monitor.interface";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import customFormat from 'dayjs/plugin/customParseFormat';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(customFormat);
 export default class MonitorServer {
   private app: Express;
   private httpServer: http.Server;

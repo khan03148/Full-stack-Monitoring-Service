@@ -19,7 +19,7 @@ export const userSchema = buildSchema(`#graphql
 
     }
     # later we can change this to input type
-    type NotificationResult {
+    input NotificationResult {
         id: ID!
         userId: Int!
         groupName: String!

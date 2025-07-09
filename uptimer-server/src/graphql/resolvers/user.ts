@@ -1,7 +1,6 @@
 import { JWT_TOKEN } from './../../server/config';
 import { INotificationDocument } from "@app/interfaces/notification.interface";
 import { IUserDocument, IUserResponse } from "@app/interfaces/user.interface";
-import { AppContext } from "@app/server/server";
 import { createNotificationGroup, getAllNotificationGroups } from "@app/services/notification.service";
 import { createNewUser, getUserByProp, getUserBySocialId, getUserByUsernameOrEmail } from "@app/services/user.service";
 import { GraphQLError } from "graphql";
@@ -11,6 +10,7 @@ import { UserModel } from '@app/models/user.model';
 import { authenticateGraphQLRoute, isEmail } from '@app/utils/utils';
 import { Request } from 'express';
 import { UserLoginRules, UserRegisterationRules } from '@app/validations';
+import { AppContext } from '@app/interfaces/monitor.interface';
 
 export const UserResolver = {
     Query: {

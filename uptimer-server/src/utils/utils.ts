@@ -4,7 +4,7 @@ import { Request} from "express";
 import { GraphQLError } from "graphql";
 import { verify } from "jsonwebtoken";
 
-
+export const appTimeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
 /**
  * Validates if the provided string is a valid email format.
  * @param {string} email - The email string to validate.
