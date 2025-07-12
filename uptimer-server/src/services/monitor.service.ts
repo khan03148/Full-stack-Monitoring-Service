@@ -3,9 +3,14 @@ import { MonitorModel } from '@app/models/monitor.model';
 import { Model, Op } from 'sequelize';
 import dayjs from 'dayjs';
 import { getSingleNotificationGroup } from '@app/services/notification.service';
+import { httpStatusMonitor } from './http.service';
+import { toLower } from 'lodash';
 
 
-
+const HTTP_TYPE = 'http';
+const TCP_TYPE = 'tcp';
+const MONGO_TYPE = 'mongodb';
+const REDIS_TYPE = 'redis';
 
 /**
  * Create a new monitor
@@ -70,7 +75,7 @@ export const getUserActiveMonitors = async (userId: number): Promise<IMonitorDoc
  * Get active monitors for all users
  * @returns {Promise<IMonitorDocument[]>}
  */
-export const getAllUsersMonitors = async (): Promise<IMonitorDocument[]> => {
+export const getAllUsersActiveMonitors = async (): Promise<IMonitorDocument[]> => {
   try {
     const monitors: IMonitorDocument[] = (await MonitorModel.findAll({
       raw: true,
@@ -221,26 +226,32 @@ export const deleteSingleMonitor = async (monitorId: number, userId: number, typ
 //   return heartbeats;
 // };
 
-// /**
-//  * Start uptime monitors
-//  * @param monitor
-//  * @param name
-//  * @param type
-//  */
-// export const startCreatedMonitors = (monitor: IMonitorDocument, name: string, type: string): void => {
-//   if (type === HTTP_TYPE) {
-//     httpStatusMonitor(monitor!, toLower(name));
-//   }
-//   if (type === TCP_TYPE) {
-//     tcpStatusMonitor(monitor!, toLower(name));
-//   }
-//   if (type === MONGO_TYPE) {
-//     mongoStatusMonitor(monitor!, toLower(name));
-//   }
-//   if (type === REDIS_TYPE) {
-//     redisStatusMonitor(monitor!, toLower(name));
-//   }
-// };
+/**
+ * Start uptime monitors
+ * @param monitor
+ * @param name
+ * @param type
+ */
+export const startCreatedMonitors = (monitor: IMonitorDocument, name: string, type: string): void => {
+  if (type === HTTP_TYPE) {
+    httpStatusMonitor(monitor!, toLower(name));
+  }
+  if (type === TCP_TYPE) {
+    console.log("tcp", monitor.name, name)
+
+    // tcpStatusMonitor(monitor!, toLower(name));
+  }
+  if (type === MONGO_TYPE) {
+    console.log("mongodb", monitor.name, name)
+
+    // mongoStatusMonitor(monitor!, toLower(name));
+  }
+  if (type === REDIS_TYPE) {
+    console.log("redis", monitor.name, name)
+
+    // redisStatusMonitor(monitor!, toLower(name));
+  }
+};
 
 const deleteMonitorTypeHeartbeats = async (monitorId: number, type: string): Promise<void> => {
   console.log(monitorId,type);
