@@ -3,8 +3,11 @@ import { MonitorModel } from '@app/models/monitor.model';
 import { Model, Op } from 'sequelize';
 import dayjs from 'dayjs';
 import { getSingleNotificationGroup } from '@app/services/notification.service';
-import { httpStatusMonitor } from './http.service';
+import { getHttpHeartBeatsByDuration, httpStatusMonitor } from './http.service';
 import { toLower } from 'lodash';
+import { IHeartbeat } from '@app/interfaces/heartbeat.interface';
+import { uptimePercentage } from '@app/utils/utils';
+import { HttpModel } from '@app/models/http.model';
 
 
 const HTTP_TYPE = 'http';
@@ -61,11 +64,24 @@ export const getUserMonitors = async (userId: number, active?: boolean): Promise
  */
 export const getUserActiveMonitors = async (userId: number): Promise<IMonitorDocument[]> => {
   try {
+    let heartbeats: IHeartbeat[] = [];
+    const updatedMonitors: IMonitorDocument[] = [];
     const monitors: IMonitorDocument[] = await getUserMonitors(userId, true);
-    for (const monitor of monitors) {
-     console.log(monitor);
+    for (let monitor of monitors) {
+      const group = await getSingleNotificationGroup(monitor.notificationId!);
+      heartbeats = await getHeartbeats(monitor.type, monitor.id!, 24);
+      const uptime: number = uptimePercentage(heartbeats);
+      monitor = {
+        ...monitor,
+        uptime,
+        heartbeats: heartbeats.slice(0, 16),
+        notifications: group
+      };
+      updatedMonitors.push(monitor);
     }
-    return monitors;
+    console.log("getuseractivemonitors",updatedMonitors)
+    return updatedMonitors;
+
   } catch (error) {
     throw new Error(error);
   }
@@ -201,30 +217,31 @@ export const deleteSingleMonitor = async (monitorId: number, userId: number, typ
   }
 };
 
-// /**
-//  * Get monitor heartbeats
-//  * @param type
-//  * @param monitorId
-//  * @param duration
-//  * @returns {Promise<IHeartbeat[]>}
-//  */
-// export const getHeartbeats = async (type: string, monitorId: number, duration: number): Promise<IHeartbeat[]> => {
-//   let heartbeats: IHeartbeat[] = [];
+/**
+ * Get monitor heartbeats
+ * @param type
+ * @param monitorId
+ * @param duration
+ * @returns {Promise<IHeartbeat[]>}
+ */
+export const getHeartbeats = async (type: string, monitorId: number, duration: number): Promise<IHeartbeat[]> => {
+  let heartbeats: IHeartbeat[] = [];
 
-//   if (type === HTTP_TYPE) {
-//     heartbeats = await getHttpHeartBeatsByDuration(monitorId, duration);
-//   }
-//   if (type === TCP_TYPE) {
-//     heartbeats = await getTcpHeartBeatsByDuration(monitorId, duration);
-//   }
-//   if (type === MONGO_TYPE) {
-//     heartbeats = await getMongoHeartBeatsByDuration(monitorId, duration);
-//   }
-//   if (type === REDIS_TYPE) {
-//     heartbeats = await getRedisHeartBeatsByDuration(monitorId, duration);
-//   }
-//   return heartbeats;
-// };
+  if (type === HTTP_TYPE) {
+    console.log("hearts", type,monitorId);
+    heartbeats = await getHttpHeartBeatsByDuration(monitorId, duration);
+  }
+  if (type === TCP_TYPE) {
+    // heartbeats = await getTcpHeartBeatsByDuration(monitorId, duration);
+  }
+  if (type === MONGO_TYPE) {
+    // heartbeats = await getMongoHeartBeatsByDuration(monitorId, duration);
+  }
+  if (type === REDIS_TYPE) {
+    // heartbeats = await getRedisHeartBeatsByDuration(monitorId, duration);
+  }
+  return heartbeats;
+};
 
 /**
  * Start uptime monitors
@@ -254,11 +271,10 @@ export const startCreatedMonitors = (monitor: IMonitorDocument, name: string, ty
 };
 
 const deleteMonitorTypeHeartbeats = async (monitorId: number, type: string): Promise<void> => {
-  console.log(monitorId,type);
-  // let model = null;
-  // if (type === HTTP_TYPE) {
-  //   model = HttpModel;
-  // }
+  let model = null;
+  if (type === HTTP_TYPE) {
+    model = HttpModel;
+  }
   // if (type === MONGO_TYPE) {
   //   model = MongoModel;
   // }
@@ -269,9 +285,9 @@ const deleteMonitorTypeHeartbeats = async (monitorId: number, type: string): Pro
   //   model = TcpModel;
   // }
 
-  // if (model !== null) {
-  //   await model.destroy({
-  //     where: { monitorId }
-  //   });
-  // }
+  if (model !== null) {
+    await model.destroy({
+      where: { monitorId }
+    });
+  }
 };

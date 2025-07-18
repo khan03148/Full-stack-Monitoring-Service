@@ -1,11 +1,12 @@
 
 import { AppContext, IMonitorArgs, IMonitorDocument } from '@app/interfaces/monitor.interface';
-import { createMonitor, deleteSingleMonitor, getMonitorById, getUserActiveMonitors, getUserMonitors, startCreatedMonitors, toggleMonitor, updateSingleMonitor } from '@app/services/monitor.service';
-import { appTimeZone, authenticateGraphQLRoute, resumeMonitors } from '@app/utils/utils';
+import { createMonitor, deleteSingleMonitor, getHeartbeats, getMonitorById, getUserActiveMonitors, getUserMonitors, startCreatedMonitors, toggleMonitor, updateSingleMonitor } from '@app/services/monitor.service';
+import { appTimeZone, authenticateGraphQLRoute, resumeMonitors, uptimePercentage } from '@app/utils/utils';
 import { startSingleJob, stopSingleBackgroundJob } from '@app/utils/jobs';
 import { getSingleNotificationGroup } from '@app/services/notification.service';
 import { some, toLower } from 'lodash';
 import {PubSub} from 'graphql-subscriptions';
+import { IHeartbeat } from '@app/interfaces/heartbeat.interface';
 
 export const pubSub:PubSub = new PubSub();
 export const MonitorResolver = {
@@ -125,13 +126,14 @@ export const MonitorResolver = {
         notifications: (monitor: IMonitorDocument) => {
             return getSingleNotificationGroup(monitor.notificationId!);
         },
-        // heartbeats: async (monitor: IMonitorDocument): Promise<IHeartbeat[]> => {
-        //     const heartbeats = await getHeartbeats(monitor.type, monitor.id!, 24);
-        //     return heartbeats.slice(0, 16);
-        // },
-        // uptime: async (monitor: IMonitorDocument): Promise<number> => {
-        //     const heartbeats: IHeartbeat[] = await getHeartbeats(monitor.type, monitor.id!, 24);
-        //     return uptimePercentage(heartbeats);
+        heartbeats: async (monitor: IMonitorDocument) => {
+            const heartbeats = await getHeartbeats(monitor.type, monitor.id!, 24);
+            return heartbeats.slice(0, 16);
+        },
+        uptime: async (monitor: IMonitorDocument): Promise<number> => {
+            const heartbeats: IHeartbeat[] = await getHeartbeats(monitor.type, monitor.id!, 24);
+            return uptimePercentage(heartbeats);
+        }
     },
       Subscription: {
     monitorsUpdated: {

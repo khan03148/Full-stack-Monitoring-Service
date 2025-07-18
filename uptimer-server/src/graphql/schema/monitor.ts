@@ -100,19 +100,20 @@ export const monitorSchema = buildSchema(`#graphql
     refresh: Boolean
   }
 
+# // to get data
   type Query {
     getSingleMonitor(monitorId: String!): MonitorResponse
     getUserMonitors(userId: String!): MonitorResponse
     autoRefresh(userId: String!, refresh: Boolean!): AutoRefresh
   }
-
+# // for update /del/create
   type Mutation {
     createMonitor(monitor: Monitor!): MonitorResponse
     toggleMonitor(monitor: ToggleMonitor!): MonitorResponse
     updateMonitor(monitorId: ID!, userId: ID!, monitor: Monitor!): MonitorResponse
     deleteMonitor(monitorId: ID!, userId: ID!, type: String!): DeleteMonitorResponse
   }
-
+# //for Subscription or continous running jobs in the background cros
   type Subscription {
     monitorsUpdated: MonitorResponse
   }
